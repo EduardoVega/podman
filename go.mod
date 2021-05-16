@@ -9,6 +9,9 @@ require (
 	github.com/checkpoint-restore/checkpointctl v0.0.0-20210301084134-a2024f5584e7
 	github.com/checkpoint-restore/go-criu v0.0.0-20190109184317-bdb7599cd87b
 	github.com/container-orchestrated-devices/container-device-interface v0.0.0-20210325223243-f99e8b6c10b9
+	github.com/containerd/containerd v1.5.0-beta.4
+	github.com/containerd/fifo v0.0.0-20210316144830-115abcc95a1d
+	github.com/containerd/ttrpc v1.0.2
 	github.com/containernetworking/cni v0.8.1
 	github.com/containernetworking/plugins v0.9.1
 	github.com/containers/buildah v1.20.2-0.20210504130217-903dc56408ac
@@ -68,4 +71,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	k8s.io/api v0.21.0
 	k8s.io/apimachinery v0.21.0
+)
+
+replace (
+	github.com/containers/ocicrypt => github.com/containers/ocicrypt v1.0.3
+	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24
+	google.golang.org/grpc => google.golang.org/grpc v1.26.0
 )

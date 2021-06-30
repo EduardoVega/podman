@@ -34,7 +34,11 @@ import (
 )
 
 const (
-	shimPIDFileName     = "shim.pid"
+	// shimPIDFileName holds the filename
+	// that contains the shimv2 daemon PID
+	shimPIDFileName = "shim.pid"
+	// shimAddressFileName holds the filename
+	// that contains the shimv2 socket address
 	shimAddressFileName = "address"
 )
 
@@ -58,36 +62,38 @@ type containerInfo struct {
 	cio *cio.ContainerIO
 }
 
-// NewShimv2 returns a new instance of shimv2
-func NewShimv2(name string, paths []string, conmonPath string, runtimeFlags []string, runtimeConfig *config.Config) (OCIRuntime, error) {
-	logrus.Debug("NewShimv2 start")
-	defer logrus.Debug("NewShimv2 end")
+// newShimv2 returns a new instance of shimv2
+func newShimv2(name string, paths []string, runtimeFlags []string, runtimeConfig *config.Config) (OCIRuntime, error) {
+	logrus.Debug("newShimv2 start")
 
 	r := new(shimv2)
 
-	// get runtime binary path
+	// set runtime path
 	p, err := getRuntimePath(name, paths)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot stat OCI runtime %q path", name)
+		return nil, errors.Wrapf(err, "cannot find a valid OCI runtime path for %q", name)
 	}
 	r.path = p
-	r.name = name
 
+	// set runtime name
+	r.name = getSupportedBinaryName(r.path)
+
+	// init container info
 	r.ctrs = make(map[string]containerInfo)
 
-	// get runtime support
-	r.supportsKVM = supportEnabled(filepath.Base(name), runtimeConfig.Engine.RuntimeSupportsKVM)
-	r.supportsJSON = supportEnabled(filepath.Base(name), runtimeConfig.Engine.RuntimeSupportsJSON)
-	r.supportsNoCgroups = supportEnabled(filepath.Base(name), runtimeConfig.Engine.RuntimeSupportsNoCgroups)
+	// set runtime support
+	r.supportsKVM = supportEnabled(r.name, runtimeConfig.Engine.RuntimeSupportsKVM)
+	r.supportsJSON = supportEnabled(r.name, runtimeConfig.Engine.RuntimeSupportsJSON)
+	r.supportsNoCgroups = supportEnabled(r.name, runtimeConfig.Engine.RuntimeSupportsNoCgroups)
 
-	// get namespace and set default if empty
+	// set namespace
 	r.ctx = namespaces.WithNamespace(context.Background(), namespaces.Default)
 	if len(runtimeConfig.Engine.Namespace) > 0 {
 		r.ctx = namespaces.WithNamespace(context.Background(), runtimeConfig.Engine.Namespace)
 	}
 
-	// create the exits directory
-	// this is used to store the exit code returned in a stop container operation
+	// create the exits directory to store the exit code
+	// returned by stop container operations
 	r.tmpDir = runtimeConfig.Engine.TmpDir
 	r.exitsDir = filepath.Join(r.tmpDir, "exits")
 	if err := os.MkdirAll(r.exitsDir, 0750); err != nil {
@@ -341,9 +347,9 @@ func (r *shimv2) closeIO(ctrID, execID string) error {
 	return nil
 }
 
+// AttachContainer attaches stdio to container stdio
 func (r *shimv2) AttachContainer(ctr *Container, inputStream io.Reader, outputStream, errorStream io.WriteCloser, tty bool) error {
 	logrus.Debug("AttachContainer start")
-	defer logrus.Debug("AttachContainer end")
 
 	// Initialize terminal resizing
 	// kubecontainer.HandleResizing(resize, func(size remotecommand.TerminalSize) {
@@ -818,7 +824,7 @@ func getRuntimePath(name string, paths []string) (string, error) {
 }
 
 // getSupportedBinaryName transforms the binary so that it has the
-// correct name expected by the shim v2 client
+// correct name expected by the shimv2 client
 func getSupportedBinaryName(path string) string {
 	runtime := filepath.Base(path)
 	return strings.Replace(runtime, "-", ".", -1)

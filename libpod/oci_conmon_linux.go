@@ -185,8 +185,6 @@ func hasCurrentUserMapped(ctr *Container) bool {
 
 // CreateContainer creates a container.
 func (r *ConmonOCIRuntime) CreateContainer(ctr *Container, restoreOptions *ContainerCheckpointOptions) error {
-	logrus.Debug("OCI runtime create container")
-
 	// always make the run dir accessible to the current user so that the PID files can be read without
 	// being in the rootless user namespace.
 	if err := makeAccessible(ctr.state.RunDir, 0, 0); err != nil {
@@ -360,8 +358,6 @@ func (r *ConmonOCIRuntime) UpdateContainerStatus(ctr *Container) error {
 // StartContainer starts the given container.
 // Sets time the container was started, but does not save it.
 func (r *ConmonOCIRuntime) StartContainer(ctr *Container) error {
-	logrus.Debug("OCI runtime start container")
-
 	// TODO: streams should probably *not* be our STDIN/OUT/ERR - redirect to buffers?
 	runtimeDir, err := util.GetRuntimeDir()
 	if err != nil {
@@ -500,8 +496,10 @@ func (r *ConmonOCIRuntime) UnpauseContainer(ctr *Container) error {
 	return utils.ExecCmdWithStdStreams(os.Stdin, os.Stdout, os.Stderr, env, r.path, append(r.runtimeFlags, "resume", ctr.ID())...)
 }
 
+// AttachContainer attaches stdio to container stdio.
+// This is only used by shimv2 OCI runtime
 func (r *ConmonOCIRuntime) AttachContainer(ctr *Container, inputStream io.Reader, outputStream, errorStream io.WriteCloser, tty bool) error {
-	return nil
+	return fmt.Errorf("not supported")
 }
 
 // HTTPAttach performs an attach for the HTTP API.

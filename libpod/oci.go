@@ -194,7 +194,7 @@ type HTTPAttachStreams struct {
 func newOCIRuntime(name string, paths []string, conmonPath string, runtimeFlags []string, runtimeCfg *config.Config) (OCIRuntime, error) {
 	// Check if shimv2 is being used
 	if isShimv2(name, paths) {
-		return NewShimv2(name, paths, conmonPath, runtimeFlags, runtimeCfg)
+		return newShimv2(name, paths, runtimeFlags, runtimeCfg)
 	}
 
 	// If oci runtime is not shimv2, default oci runtime is returned

@@ -122,6 +122,8 @@ func (c *Container) StartAndAttach(ctx context.Context, streams *define.AttachSt
 
 	// Attach to the container before starting it
 	go func() {
+		// if shimv2 OCI runtime is being used, the attach operation
+		// will be handled in a different way
 		if isShimv2(c.ociRuntime.Name(), []string{c.ociRuntime.Path()}) {
 			logrus.Debugf("Attaching to container %s", c.ID())
 

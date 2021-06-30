@@ -144,14 +144,18 @@ func getOCIRuntimeError(runtimeMsg string) error {
 	return errors.Wrapf(define.ErrOCIRuntime, "%s", strings.Trim(runtimeMsg, "\n"))
 }
 
+// isShimv2 verifies if the oci runtime needs to use shimv2 daemon
+// to create containers i.e kata containers v2
 func isShimv2(name string, paths []string) bool {
 	// Check if oci runtime name is shimv2
+	// i.e containerd.shim.kata.v2
 	r, _ := regexp.Compile(shimv2NameRegex)
 	if r.MatchString(name) {
 		return true
 	}
 
 	// Check if any of the oci runtime paths is shimv2
+	// i.e /path/to/containerd-shim-kata-v2
 	r, _ = regexp.Compile(shimv2BinaryRegex)
 	for _, p := range paths {
 		if r.MatchString(p) {

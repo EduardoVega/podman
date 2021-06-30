@@ -67,6 +67,7 @@ type OCIRuntime interface {
 	// AttachResize resizes the terminal in use by the given container.
 	AttachResize(ctr *Container, newSize define.TerminalSize) error
 
+	// AttachContainer attaches stdio to a container stdio. Used by shimv2 OCI runtime.
 	AttachContainer(ctr *Container, inputStream io.Reader, outputStream, errorStream io.WriteCloser, tty bool) error
 
 	// ExecContainer executes a command in a running container.
